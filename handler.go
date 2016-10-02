@@ -1,4 +1,4 @@
-package api
+package main
 
 import (
 	"github.com/gorilla/websocket"
@@ -14,11 +14,19 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-// Client is an middleman between the websocket connection and the hub.
-type Client struct {
+type SocketHandler interface {
+}
+
+// SocketHandler is an middleman between the websocket connection and the hub.
+type socketHandler struct {
 	// The websocket connection.
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
 	send chan []byte
+}
+
+func NewSocketHandler() SocketHandler {
+	s := &socketHandler{}
+	return s
 }
