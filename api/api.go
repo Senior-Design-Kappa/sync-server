@@ -33,6 +33,20 @@ func NewServer(conf config.Config, logic logic.Logic) *Server {
 	return s
 }
 
+// health reports 200 if services is up and running
 func health(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "OK")
+}
+
+// serveWs handles websocket requests from client
+func serveWs(w http.ResponseWriter, r *http.Request) {
+	//conn, err := upgrader.Upgrade(w, r, nil)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return
+	// }
+	// client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	// client.hub.register <- client
+	// go client.writePump()
+	// client.readPump()
 }
