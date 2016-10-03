@@ -60,11 +60,11 @@ func health(w http.ResponseWriter, r *http.Request) {
 
 // handleConnection handles websocket requests from client
 func handleConnection(w http.ResponseWriter, r *http.Request) {
-	vals := r.URL.Query()
-	roomID := vals.Get("roomID")
-	if roomID != "" {
+	vals := mux.Vars(r)
+	roomID, ok := vals["roomID"]
+	if !ok {
 		// handle invalid roomID
-		fmt.Printf("Invalid roomID\n")
+		log.Printf("Invalid roomID\n")
 		http.Error(w, "Room not found", 404)
 		return
 	}

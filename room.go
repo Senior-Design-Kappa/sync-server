@@ -1,13 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
+	"log"
 )
 
 type Room struct {
 	// list of clients in this room
-	clients []*Client
+	clients map[*Client]bool
 
 	// channel for outbound messages
 	outbound chan []byte
@@ -17,12 +18,12 @@ type Room struct {
 }
 
 func NewRoom() *Room {
-	h := &Room{
-		clients:  make([]*Client, 0),
+	r := &Room{
+		clients:  make(map[*Client]bool),
 		inbound:  make(chan []byte),
 		outbound: make(chan []byte),
 	}
-	return h
+	return r
 }
 
 func (r *Room) run() {
@@ -30,31 +31,42 @@ func (r *Room) run() {
 		select {
 		case message := <-r.inbound:
 			if err := r.handleMessage(message); err != nil {
-				fmt.Printf("Message (%s) not handled\n", message)
+				log.Printf("Message (%s) not handled\n", message)
 			}
 		}
 	}
 }
 
 func (r *Room) handleMessage(message []byte) (err error) {
-	switch m := parse(message); m.messageType {
+	switch m := parse(message); m.MessageType {
 	case "test":
-		fmt.Printf(m.message)
+		for client := range r.clients {
+			// m, err := json.Marshal(message)
+			// if err != nil {
+			// 	return err
+			// }
+			select {
+			case client.send <- message:
+			default:
+				close(client.send)
+				delete(r.clients, client)
+			}
+		}
 	default:
-		return errors.New("Message not handled")
+		return errors.New("")
 	}
 
 	return
 }
 
 func (r *Room) addClient(client *Client) {
-	r.clients = append(r.clients, client)
+	r.clients[client] = true
 }
 
 func parse(message []byte) Message {
-	m := Message{
-		messageType: "test",
-		message:     "this is working",
+	var m Message
+	if err := json.Unmarshal(message, &m); err != nil {
+		log.Printf("error unmarshaling message: %+v\n", err)
 	}
 	return m
 }

@@ -1,10 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"log"
 	"time"
 
 	"github.com/gorilla/websocket"
+)
+
+var (
+	newline = []byte{'\n'}
+	space   = []byte{' '}
 )
 
 const (
@@ -60,11 +66,13 @@ func (c *Client) readFrom() {
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
+			log.Printf("error: %+v", err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
 				log.Printf("error: %v", err)
+				break
 			}
-			break
 		}
+		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		c.room.inbound <- message
 	}
 }

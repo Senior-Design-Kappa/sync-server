@@ -8,6 +8,7 @@ type NewConnection struct {
 }
 
 type Message struct {
-	messageType string
-	message     string
+	MessageType string     `json:"messageType"`
+	Message     string     `json:"message"`
+	Video       VideoState `json:"videoState"`
 }

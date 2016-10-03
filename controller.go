@@ -41,10 +41,12 @@ func (c *Controller) addClient(nc *NewConnection) (err error) {
 	return
 }
 
+// Performs a db lookup for an existing room
 func (c *Controller) roomLookup(room string) (*Room, error) {
 	if room == "testroom" {
 		r := NewRoom()
-		return r
+		go r.run()
+		return r, nil
 	}
 	return nil, nil
 }

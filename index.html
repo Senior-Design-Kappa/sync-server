@@ -1,42 +1,29 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+  <script type="text/javascript">
+    var ws = new WebSocket("ws://localhost:8000/connect/testroom");
 
-    <script type="text/javascript">
-         function myWebsocketStart()
-         {
-               var ws = new WebSocket("ws://localhost:8000/connect/testroom");
+    ws.onopen = function() {
+     console.log("Opened")
+      ws.send(JSON.stringify({
+        messageType: "test",
+        message: "Opened!"
+      }));
+    };
 
-               ws.onopen = function()
-               {
-                  // Web Socket is connected, send data using send()
-                  ws.send("ping");
-                  var myTextArea = document.getElementById("textarea1");
-                  myTextArea.value = myTextArea.value + "\n" + "First message sent";
-               };
+    ws.onmessage = function (evt) {
+     console.log(evt.data)
+      if(evt.data == "pong") {
+        setTimeout(function(){ws.send("ping");}, 2000);
+      }
+    };
 
-               ws.onmessage = function (evt)
-               {
-                  var myTextArea = document.getElementById("textarea1");
-                  myTextArea.value = myTextArea.value + "\n" + evt.data
-                  if(evt.data == "pong") {
-                    setTimeout(function(){ws.send("ping");}, 2000);
-                  }
-               };
-
-               ws.onclose = function()
-               {
-                  var myTextArea = document.getElementById("textarea1");
-                  myTextArea.value = myTextArea.value + "\n" + "Connection closed";
-               };
-
-         }
-
-    </script>
-
+    ws.onclose = function() {
+     console.log("Closed")
+    };
+  </script>
 </head>
 <body>
-<button onclick="javascript:myWebsocketStart()">Start websocket!</button>
-<textarea id="textarea1">MyTextArea</textarea>
 </body>
 </html>
