@@ -2,7 +2,8 @@
 <html>
 <head>
   <script type="text/javascript">
-    var ws = new WebSocket("ws://localhost:8000/connect/testroom");
+    var roomID = window.location.href.split("/").pop()
+    var ws = new WebSocket("ws://localhost:8000/connect/" + roomID);
     var flag = false;
     var flag2 = false;
     ws.onopen = function() {

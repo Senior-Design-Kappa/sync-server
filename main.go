@@ -28,6 +28,7 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", serveRoot)
+	r.HandleFunc("/room/{roomID}", serveRoom)
 	r.HandleFunc("/health", health)
 	r.HandleFunc("/connect/{roomID}", handleConnection)
 
@@ -45,6 +46,15 @@ func serveRoot(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not found", 404)
 		return
 	}
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", 405)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	indexTemplate.Execute(w, r.Host)
+}
+
+func serveRoom(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", 405)
 		return

@@ -1,5 +1,7 @@
 package main
 
+import "log"
+
 type Controller struct {
 	clients map[*Client]*Room
 
@@ -43,11 +45,9 @@ func (c *Controller) addClient(nc *NewConnection) (err error) {
 
 // Performs a db lookup for an existing room
 func (c *Controller) roomLookup(room string) (*Room, error) {
-	if room == "testroom" {
-		r := NewRoom()
-		c.rooms[room] = r
-		go r.run()
-		return r, nil
-	}
-	return nil, nil
+	r := NewRoom()
+	c.rooms[room] = r
+	go r.run()
+	log.Printf("New room %s", room)
+	return r, nil
 }
