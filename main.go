@@ -8,21 +8,28 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 var (
 	addr          = "localhost:8000"
 	indexTemplate = template.Must(template.ParseFiles("index.html"))
+	upgrader      = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+	c *Controller
 )
 
 func main() {
-	// hub := newHub()
-	// go hub.run()
+	c = NewController()
+	go c.run()
+
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", serveRoot)
 	r.HandleFunc("/health", health)
-	r.HandleFunc("/connect", serveWs)
+	r.HandleFunc("/connect/{roomID}", handleConnection)
 
 	s := http.Server{
 		Handler:      r,
@@ -51,16 +58,21 @@ func health(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "OK")
 }
 
-// serveWs handles websocket requests from client
-func serveWs(w http.ResponseWriter, r *http.Request) {
-	// conn, err := upgrader.Upgrade(w, r, nil)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
-	// fmt.Println("client connected")
-	// client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
-	// client.hub.register <- client
-	// go client.writePump()
-	// client.readPump()
+// handleConnection handles websocket requests from client
+func handleConnection(w http.ResponseWriter, r *http.Request) {
+	vals := r.URL.Query()
+	roomID := vals.Get("roomID")
+	if roomID != "" {
+		// handle invalid roomID
+		fmt.Printf("Invalid roomID\n")
+		http.Error(w, "Room not found", 404)
+		return
+	}
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	nc := &NewConnection{conn, roomID}
+	c.register <- nc
 }
