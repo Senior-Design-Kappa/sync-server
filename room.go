@@ -39,12 +39,10 @@ func (r *Room) run() {
 
 func (r *Room) handleMessage(message []byte) (err error) {
 	switch m := parse(message); m.MessageType {
-	case "test":
+	case "debug":
+		log.Printf("%+v", m)
+	case "SYNC_VIDEO":
 		for client := range r.clients {
-			// m, err := json.Marshal(message)
-			// if err != nil {
-			// 	return err
-			// }
 			select {
 			case client.send <- message:
 			default:

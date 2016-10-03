@@ -45,6 +45,7 @@ func (c *Controller) addClient(nc *NewConnection) (err error) {
 func (c *Controller) roomLookup(room string) (*Room, error) {
 	if room == "testroom" {
 		r := NewRoom()
+		c.rooms[room] = r
 		go r.run()
 		return r, nil
 	}

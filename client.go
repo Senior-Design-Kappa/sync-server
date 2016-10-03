@@ -66,11 +66,11 @@ func (c *Client) readFrom() {
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
-			log.Printf("error: %+v", err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
 				log.Printf("error: %v", err)
-				break
+				delete(c.room.clients, c)
 			}
+			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		c.room.inbound <- message
