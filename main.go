@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	"github.com/sync-server/api"
-	"github.com/sync-server/backend"
-	"github.com/sync-server/config"
-	"github.com/sync-server/logic"
+	"github.com/Senior-Design-Kappa/sync-server/api"
+	"github.com/Senior-Design-Kappa/sync-server/backend"
+	"github.com/Senior-Design-Kappa/sync-server/config"
+	"github.com/Senior-Design-Kappa/sync-server/logic"
 )
 
 func main() {

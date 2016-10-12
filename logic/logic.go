@@ -1,8 +1,8 @@
 package logic
 
 import (
-	"github.com/sync-server/backend"
-	"github.com/sync-server/config"
+	"github.com/Senior-Design-Kappa/sync-server/backend"
+	"github.com/Senior-Design-Kappa/sync-server/config"
 )
 
 type Logic interface {
