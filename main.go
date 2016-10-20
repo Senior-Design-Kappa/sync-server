@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	addr     = os.Getenv("SYNC_SERVER_ADDRESS") + ":8000"
+	addr     = os.Getenv("SERVER_ADDRESS") + ":8000"
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
