@@ -3,8 +3,6 @@ FROM golang:1.7.3-alpine
 RUN apk add --update git
 
 RUN export GOPATH=$HOME
-ENV SERVER_ADDRESS="159.203.88.91"
-
 
 ADD . /go/src/github.com/Senior-Design-Kappa/sync-server
 
