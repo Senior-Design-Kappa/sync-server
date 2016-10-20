@@ -1,9 +1,11 @@
-package main
+package room
 
 import (
 	"encoding/json"
 	"errors"
 	"log"
+
+	"github.com/Senior-Design-Kappa/sync-server/models"
 )
 
 type Room struct {
@@ -26,7 +28,7 @@ func NewRoom() *Room {
 	return r
 }
 
-func (r *Room) run() {
+func (r *Room) Run() {
 	for {
 		select {
 		case inboundMessage := <-r.inbound:
@@ -44,12 +46,23 @@ func (r *Room) handleMessage(inboundMessage InboundMessage) (err error) {
 		log.Printf("%+v", m)
 	case "INIT":
 		client := inboundMessage.Sender
-		outbound, _ := json.Marshal(Message{
+		outbound, _ := json.Marshal(models.Message{
 			MessageType: "INIT",
 			Hash:        client.hash,
 		})
 		client.send <- outbound
 	case "SYNC_VIDEO":
+		for client := range r.clients {
+			if client != inboundMessage.Sender {
+				select {
+				case client.send <- message:
+				default:
+					close(client.send)
+					delete(r.clients, client)
+				}
+			}
+		}
+	case "SYNC_CANVAS":
 		for client := range r.clients {
 			if client != inboundMessage.Sender {
 				select {
@@ -67,12 +80,12 @@ func (r *Room) handleMessage(inboundMessage InboundMessage) (err error) {
 	return
 }
 
-func (r *Room) addClient(client *Client) {
+func (r *Room) AddClient(client *Client) {
 	r.clients[client] = true
 }
 
-func parse(message []byte) Message {
-	var m Message
+func parse(message []byte) models.Message {
+	var m models.Message
 	if err := json.Unmarshal(message, &m); err != nil {
 		log.Printf("error unmarshaling message: %+v\n", err)
 	}

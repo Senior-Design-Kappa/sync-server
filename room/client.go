@@ -1,4 +1,4 @@
-package main
+package room
 
 import (
 	"bytes"
@@ -42,6 +42,11 @@ type Client struct {
 	hash string
 }
 
+type InboundMessage struct {
+	Sender     *Client
+	RawMessage []byte
+}
+
 func NewClient(conn *websocket.Conn, room *Room, hash string) *Client {
 	c := &Client{
 		conn: conn,
@@ -52,7 +57,7 @@ func NewClient(conn *websocket.Conn, room *Room, hash string) *Client {
 	return c
 }
 
-func (c *Client) run() {
+func (c *Client) Run() {
 	go c.readFrom()
 	go c.writeTo()
 }

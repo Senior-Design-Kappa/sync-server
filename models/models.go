@@ -1,11 +1,11 @@
-package main
+package models
 
 import "github.com/gorilla/websocket"
 
 type NewConnection struct {
-	conn *websocket.Conn
-	room string
-	hash string
+	Conn *websocket.Conn
+	Room string
+	Hash string
 }
 
 type VideoState struct {
@@ -14,11 +14,6 @@ type VideoState struct {
 }
 
 type CanvasState struct {
-}
-
-type InboundMessage struct {
-	Sender     *Client
-	RawMessage []byte
 }
 
 type Message struct {

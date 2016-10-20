@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Senior-Design-Kappa/sync-server/controller"
+	"github.com/Senior-Design-Kappa/sync-server/models"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
@@ -20,7 +22,7 @@ var (
 			return true
 		},
 	}
-	c *Controller
+	c *controller.Controller
 )
 
 const (
@@ -32,8 +34,8 @@ const (
 )
 
 func main() {
-	c = NewController()
-	go c.run()
+	c = controller.NewController()
+	go c.Run()
 
 	r := mux.NewRouter()
 
@@ -46,6 +48,8 @@ func main() {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
+	log.Printf("Listening and serving on %s\n", addr)
+
 	log.Fatal(s.ListenAndServe())
 }
 
@@ -92,6 +96,10 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	hash := generateHash(hashLength)
-	nc := &NewConnection{conn, roomID, hash}
-	c.register <- nc
+	nc := &models.NewConnection{
+		Conn: conn,
+		Room: roomID,
+		Hash: hash,
+	}
+	c.Register <- nc
 }
