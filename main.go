@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Senior-Design-Kappa/sync-server/controller"
@@ -14,7 +15,7 @@ import (
 )
 
 var (
-	addr     = "localhost:8000"
+	addr     = os.Getenv("SYNC_SERVER_ADDRESS") + ":8000"
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
