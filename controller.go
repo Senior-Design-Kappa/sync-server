@@ -1,3 +1,6 @@
+/*
+Controller handles new connections by registering them to correct rooms
+*/
 package main
 
 import "log"
@@ -36,7 +39,7 @@ func (c *Controller) addClient(nc *NewConnection) (err error) {
 			return err
 		}
 	}
-	newClient := NewClient(nc.conn, room)
+	newClient := NewClient(nc.conn, room, nc.hash)
 	c.clients[newClient] = room
 	room.addClient(newClient)
 	newClient.run()

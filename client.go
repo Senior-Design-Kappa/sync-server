@@ -37,13 +37,17 @@ type Client struct {
 
 	// Buffered channel of outbound messages.
 	send chan []byte
+
+	// Generated unique identifier
+	hash string
 }
 
-func NewClient(conn *websocket.Conn, room *Room) *Client {
+func NewClient(conn *websocket.Conn, room *Room, hash string) *Client {
 	c := &Client{
 		conn: conn,
 		send: make(chan []byte, 256),
 		room: room,
+		hash: hash,
 	}
 	return c
 }
@@ -73,7 +77,7 @@ func (c *Client) readFrom() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.room.inbound <- message
+		c.room.inbound <- InboundMessage{c, message}
 	}
 }
 

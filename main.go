@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
-	"text/template"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -12,13 +12,23 @@ import (
 )
 
 var (
-	addr          = "localhost:8000"
-	indexTemplate = template.Must(template.ParseFiles("index.html"))
-	upgrader      = websocket.Upgrader{
+	addr     = "localhost:8000"
+	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
 	}
 	c *Controller
+)
+
+const (
+	letterBytes   = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	letterIdxBits = 6                    // 6 bits to represent a letter index
+	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+	hashLength    = 64
 )
 
 func main() {
@@ -27,8 +37,6 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", serveRoot)
-	r.HandleFunc("/room/{roomID}", serveRoom)
 	r.HandleFunc("/health", health)
 	r.HandleFunc("/connect/{roomID}", handleConnection)
 
@@ -41,35 +49,35 @@ func main() {
 	log.Fatal(s.ListenAndServe())
 }
 
-func serveRoot(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", 404)
-		return
-	}
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", 405)
-		return
-	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	indexTemplate.Execute(w, r.Host)
-}
-
-func serveRoom(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", 405)
-		return
-	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	indexTemplate.Execute(w, r.Host)
-}
-
 // health reports 200 if services is up and running
 func health(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "OK")
 }
 
+func generateHash(n int) string {
+	src := rand.NewSource(time.Now().UnixNano())
+	b := make([]byte, n)
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = src.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+	return string(b)
+}
+
 // handleConnection handles websocket requests from client
 func handleConnection(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", 405)
+		return
+	}
 	vals := mux.Vars(r)
 	roomID, ok := vals["roomID"]
 	if !ok {
@@ -83,6 +91,7 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	nc := &NewConnection{conn, roomID}
+	hash := generateHash(hashLength)
+	nc := &NewConnection{conn, roomID, hash}
 	c.register <- nc
 }
