@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+  "os"
 	"time"
 
 	"github.com/Senior-Design-Kappa/sync-server/controller"
@@ -34,6 +35,10 @@ const (
 )
 
 func main() {
+  if os.Getenv("ADDR") != "" {
+    addr = os.Getenv("ADDR")
+  }
+
 	c = controller.NewController()
 	go c.Run()
 
