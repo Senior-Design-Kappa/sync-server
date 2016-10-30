@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+  "time"
 
 	"github.com/Senior-Design-Kappa/sync-server/models"
 )
@@ -17,6 +18,9 @@ type Room struct {
 
 	// channel for inbound messages
 	inbound chan InboundMessage
+
+  // state of room (canvas + video state)
+  state RoomState
 }
 
 func NewRoom() *Room {
@@ -24,6 +28,7 @@ func NewRoom() *Room {
 		clients:  make(map[*Client]bool),
 		inbound:  make(chan InboundMessage),
 		outbound: make(chan []byte),
+    state:    *NewRoomState(),
 	}
 	return r
 }
@@ -40,15 +45,28 @@ func (r *Room) Run() {
 }
 
 func (r *Room) handleMessage(inboundMessage InboundMessage) (err error) {
+  r.state.UpdateStateFromInboundMessage(inboundMessage)
+
 	message := inboundMessage.RawMessage
 	switch m := parse(message); m.MessageType {
 	case "debug":
 		log.Printf("%+v", m)
 	case "INIT":
 		client := inboundMessage.Sender
+    videoTime := r.state.LastVideoTime
+    if r.state.VideoPlaying {
+      videoTime += float32(time.Now().Sub(r.state.LastTime).Seconds())
+    }
 		outbound, _ := json.Marshal(models.Message{
 			MessageType: "INIT",
 			Hash:        client.hash,
+
+      Video: models.VideoState {
+        Playing: r.state.VideoPlaying,
+        CurrentTime: videoTime,
+      },
+
+      Lines: r.state.LineSegments,
 		})
 		client.send <- outbound
 	case "SYNC_VIDEO":
