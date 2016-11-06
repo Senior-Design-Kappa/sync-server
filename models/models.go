@@ -23,6 +23,11 @@ type LineSegment struct {
   CurrY int `json:"currY"`
 }
 
+type ErasePoint struct {
+  X int `json:"x"`
+  Y int `json:"y"`
+}
+
 type Message struct {
 	MessageType string     `json:"messageType"`
 	Message     string     `json:"message"`
@@ -34,5 +39,8 @@ type Message struct {
   CurrX       int        `json:"currX"`
   CurrY       int        `json:"currY"`
 
-  Lines       []LineSegment `json:"lines"`
+  X           int        `json:"x"`
+  Y           int        `json:"y"`
+
+  Actions     []interface{} `json:"actions"`
 }

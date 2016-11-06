@@ -66,7 +66,7 @@ func (r *Room) handleMessage(inboundMessage InboundMessage) (err error) {
         CurrentTime: videoTime,
       },
 
-      Lines: r.state.LineSegments,
+      Actions: r.state.Actions,
 		})
 		client.send <- outbound
 	case "SYNC_VIDEO":
