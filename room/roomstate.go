@@ -11,7 +11,7 @@ type RoomState struct {
   LastTime      time.Time
   VideoPlaying  bool
 
-  LineSegments  []models.LineSegment
+  Actions  []interface{}
 }
 
 func NewRoomState() *RoomState {
@@ -19,7 +19,7 @@ func NewRoomState() *RoomState {
     LastVideoTime: 0.0,
     LastTime: time.Now(),
     VideoPlaying: false,
-    LineSegments: make([]models.LineSegment, 0),
+    Actions: make([]interface{}, 0),
   }
   return rs
 }
@@ -32,12 +32,31 @@ func (rs *RoomState) UpdateStateFromInboundMessage(m InboundMessage) {
     rs.LastTime = time.Now()
   case "SYNC_CANVAS":
     if rm.Message == "DRAW_LINE" {
-      rs.LineSegments = append(rs.LineSegments, models.LineSegment{
-        PrevX: rm.PrevX,
-        PrevY: rm.PrevY,
-        CurrX: rm.CurrX,
-        CurrY: rm.CurrY,
-      })
+      rs.Actions = append(rs.Actions,
+        struct {
+          models.LineSegment
+          Type string `json:"t"`
+        } {
+          LineSegment: models.LineSegment {
+            PrevX: rm.PrevX,
+            PrevY: rm.PrevY,
+            CurrX: rm.CurrX,
+            CurrY: rm.CurrY,
+          },
+          Type: "DRAW_LINE",
+        })
+    } else if rm.Message == "ERASE" {
+      rs.Actions = append(rs.Actions,
+        struct {
+          models.ErasePoint
+          Type string `json:"t"`
+        } {
+          ErasePoint: models.ErasePoint {
+            X: rm.X,
+            Y: rm.Y,
+          },
+          Type: "ERASE",
+        })
     }
   }
 }
