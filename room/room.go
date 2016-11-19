@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-  "time"
 
 	"github.com/Senior-Design-Kappa/sync-server/models"
 )
@@ -53,18 +52,7 @@ func (r *Room) handleMessage(inboundMessage InboundMessage) (err error) {
 		log.Printf("%+v", m)
 	case "INIT":
 		client := inboundMessage.Sender
-    videoTime := r.state.LastVideoTime
-    if r.state.VideoPlaying {
-      videoTime += float32(time.Now().Sub(r.state.LastTime).Seconds())
-    }
-    points := make([][]int, 0)
-    for k, v := range r.state.Canvas {
-      if v.r == 0 && v.g == 0 && v.b == 0 && v.a == 255 {
-        points = append(points, []int{k.x, k.y})
-      } else {
-        points = append(points, []int{k.x, k.y, int(v.r), int(v.g), int(v.b), int(v.a)})
-      }
-    }
+    videoTime := r.state.GetVideoTime()
 		outbound, _ := json.Marshal(models.Message{
 			MessageType: "INIT",
 			Hash:        client.hash,
@@ -74,7 +62,7 @@ func (r *Room) handleMessage(inboundMessage InboundMessage) (err error) {
         CurrentTime: videoTime,
       },
 
-      Points: points,
+      Canvas: r.state.Canvas,
 		})
 		client.send <- outbound
 	case "SYNC_VIDEO":

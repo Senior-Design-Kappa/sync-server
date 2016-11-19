@@ -2,26 +2,16 @@ package room
 
 import (
   "time"
+
+	"github.com/Senior-Design-Kappa/sync-server/models"
 )
-
-type point struct {
-  x int
-  y int
-}
-
-type color struct {
-  r uint8
-  g uint8
-  b uint8
-  a uint8
-}
 
 type RoomState struct {
   LastVideoTime float32
   LastTime      time.Time
   VideoPlaying  bool
 
-  Canvas map[point]color
+  Canvas models.CanvasState
 }
 
 func NewRoomState() *RoomState {
@@ -29,9 +19,17 @@ func NewRoomState() *RoomState {
     LastVideoTime: 0.0,
     LastTime: time.Now(),
     VideoPlaying: false,
-    Canvas: make(map[point]color),
+    Canvas: models.NewCanvasState(),
   }
   return rs
+}
+
+func (rs * RoomState) GetVideoTime() float32 {
+  videoTime := rs.LastVideoTime
+  if rs.VideoPlaying {
+    videoTime += float32(time.Now().Sub(rs.LastTime).Seconds())
+  }
+  return videoTime
 }
 
 func (rs *RoomState) UpdateStateFromInboundMessage(m InboundMessage) {
@@ -41,27 +39,6 @@ func (rs *RoomState) UpdateStateFromInboundMessage(m InboundMessage) {
     rs.VideoPlaying = rm.Video.Playing
     rs.LastTime = time.Now()
   case "SYNC_CANVAS":
-    if rm.Message == "DRAW_POINTS" {
-      for _, pt := range rm.Points {
-        coords := point {
-          x: pt[0],
-          y: pt[1],
-        };
-        rs.Canvas[coords] = color {
-          r: 0,
-          g: 0,
-          b: 0,
-          a: 255,
-        };
-      }
-    } else if rm.Message == "ERASE" {
-      for _, pt := range rm.Points {
-        coords := point {
-          x: pt[0],
-          y: pt[1],
-        };
-        delete(rs.Canvas, coords)
-      }
-    }
+    rs.Canvas.UpdateFromCanvasMessage(rm.Message)
   }
 }

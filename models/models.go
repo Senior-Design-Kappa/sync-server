@@ -13,14 +13,10 @@ type VideoState struct {
 	CurrentTime float32 `json:"currentTime"`
 }
 
-type CanvasState struct {
-}
-
 type Message struct {
 	MessageType string     `json:"messageType"`
 	Message     string     `json:"message"`
 	Hash        string     `json:"hash"`
 	Video       VideoState `json:"videoState"`
-
-  Points      [][]int    `json:"points"`
+  Canvas      CanvasState `json:"canvasState"`
 }
