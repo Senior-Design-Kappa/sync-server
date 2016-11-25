@@ -5,6 +5,11 @@ import (
   "log"
 )
 
+type location struct {
+  X int
+  Y int
+}
+
 type Point struct {
   X int `json:"x"`
   Y int `json:"y"`
@@ -21,15 +26,26 @@ type CanvasMessage struct {
   Points []Point `json:"points"`
 }
 
-
 type CanvasState struct {
-  Points []Point `json:"points"`
+  Points map[location][]Point
 }
 
 func NewCanvasState() CanvasState {
   return CanvasState {
-    Points: []Point{},
+    Points: make(map[location][]Point),
   }
+}
+
+func (c CanvasState) MarshalJSON() ([]byte, error) {
+  p := make([]Point, 0)
+  for _, v := range c.Points {
+    p = append(p, v...)
+  }
+  return json.Marshal(struct {
+    Points []Point `json:"points"`
+  } {
+    Points: p,
+  })
 }
 
 func (c * CanvasState) UpdateFromCanvasMessage(m string) {
@@ -39,12 +55,22 @@ func (c * CanvasState) UpdateFromCanvasMessage(m string) {
     return
   }
   if cm.MessageType == "POINTS" {
-    c.Points = append(c.Points, cm.Points...)
+    for _, e := range cm.Points {
+      loc := location {
+        X: e.X,
+        Y: e.Y,
+      }
+      c.Points[loc] = append(c.Points[loc], e)
+    }
   } else if cm.MessageType == "ERASE" {
     for _, e := range cm.Points {
-      for i, p := range c.Points {
-        if p.X == e.X && p.Y == e.Y && p.T1 <= e.T1 && p.T1 <= e.T2 {
-          c.Points[i].T2 = e.T1 - 0.0000001
+      loc := location {
+        X: e.X,
+        Y: e.Y,
+      }
+      for i, p := range c.Points[loc] {
+        if p.T1 <= e.T1 && p.T1 <= e.T2 {
+          c.Points[loc][i].T2 = e.T1 - 0.0000001
         }
       }
     }

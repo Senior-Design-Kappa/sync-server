@@ -30,7 +30,7 @@ func NewRoomState() *RoomState {
 }
 
 func (rs * RoomState) GetVideoTime() float32 {
-  videoTime := rs.LastVideoTime
+  videoTime := rs.CurrentTime
   if rs.VideoPlaying {
     videoTime += float32(time.Now().Sub(rs.LastTime).Seconds())
   }
