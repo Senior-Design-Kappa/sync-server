@@ -7,7 +7,7 @@ import (
 )
 
 type RoomState struct {
-  LastVideoTime float32
+  models.VideoState
   LastTime      time.Time
   VideoPlaying  bool
 
@@ -16,7 +16,12 @@ type RoomState struct {
 
 func NewRoomState() *RoomState {
   rs := &RoomState{
-    LastVideoTime: 0.0,
+    VideoState: models.VideoState {
+      CurrentTime: 0.0,
+      Playing: false,
+      Volume: 1.0,
+      Muted: false,
+    },
     LastTime: time.Now(),
     VideoPlaying: false,
     Canvas: models.NewCanvasState(),
@@ -35,8 +40,10 @@ func (rs * RoomState) GetVideoTime() float32 {
 func (rs *RoomState) UpdateStateFromInboundMessage(m InboundMessage) {
   switch rm := parse(m.RawMessage); rm.MessageType {
   case "SYNC_VIDEO":
-    rs.LastVideoTime = rm.Video.CurrentTime
-    rs.VideoPlaying = rm.Video.Playing
+    rs.CurrentTime = rm.Video.CurrentTime
+    rs.Playing = rm.Video.Playing
+    rs.Volume = rm.Video.Volume
+    rs.Muted = rm.Video.Muted
     rs.LastTime = time.Now()
   case "SYNC_CANVAS":
     rs.Canvas.UpdateFromCanvasMessage(rm.Message)

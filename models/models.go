@@ -11,6 +11,8 @@ type NewConnection struct {
 type VideoState struct {
 	Playing     bool    `json:"playing"`
 	CurrentTime float32 `json:"currentTime"`
+  Volume float32 `json:"volume"`
+  Muted bool `json:"muted"`
 }
 
 type Message struct {

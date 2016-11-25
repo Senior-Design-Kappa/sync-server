@@ -53,13 +53,18 @@ func (r *Room) handleMessage(inboundMessage InboundMessage) (err error) {
 	case "INIT":
 		client := inboundMessage.Sender
     videoTime := r.state.GetVideoTime()
+    if r.state.Playing {
+      videoTime += float32(time.Now().Sub(r.state.LastTime).Seconds())
+    }
 		outbound, _ := json.Marshal(models.Message{
 			MessageType: "INIT",
 			Hash:        client.hash,
 
       Video: models.VideoState {
-        Playing: r.state.VideoPlaying,
+        Playing: r.state.Playing,
         CurrentTime: videoTime,
+        Volume: r.state.Volume,
+        Muted: r.state.Muted,
       },
 
       Canvas: r.state.Canvas,
