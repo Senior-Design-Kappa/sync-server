@@ -3,13 +3,15 @@ package room
 import (
   "time"
 
-  "github.com/Senior-Design-Kappa/sync-server/models"
+	"github.com/Senior-Design-Kappa/sync-server/models"
 )
 
 type RoomState struct {
   models.VideoState
   LastTime      time.Time
-  Actions  []interface{}
+  VideoPlaying  bool
+
+  Canvas models.CanvasState
 }
 
 func NewRoomState() *RoomState {
@@ -21,9 +23,18 @@ func NewRoomState() *RoomState {
       Muted: false,
     },
     LastTime: time.Now(),
-    Actions: make([]interface{}, 0),
+    VideoPlaying: false,
+    Canvas: models.NewCanvasState(),
   }
   return rs
+}
+
+func (rs * RoomState) GetVideoTime() float32 {
+  videoTime := rs.CurrentTime
+  if rs.VideoPlaying {
+    videoTime += float32(time.Now().Sub(rs.LastTime).Seconds())
+  }
+  return videoTime
 }
 
 func (rs *RoomState) UpdateStateFromInboundMessage(m InboundMessage) {
@@ -35,32 +46,6 @@ func (rs *RoomState) UpdateStateFromInboundMessage(m InboundMessage) {
     rs.Muted = rm.Video.Muted
     rs.LastTime = time.Now()
   case "SYNC_CANVAS":
-    if rm.Message == "DRAW_LINE" {
-      rs.Actions = append(rs.Actions,
-        struct {
-          models.LineSegment
-          Type string `json:"t"`
-        } {
-          LineSegment: models.LineSegment {
-            PrevX: rm.PrevX,
-            PrevY: rm.PrevY,
-            CurrX: rm.CurrX,
-            CurrY: rm.CurrY,
-          },
-          Type: "DRAW_LINE",
-        })
-    } else if rm.Message == "ERASE" {
-      rs.Actions = append(rs.Actions,
-        struct {
-          models.ErasePoint
-          Type string `json:"t"`
-        } {
-          ErasePoint: models.ErasePoint {
-            X: rm.X,
-            Y: rm.Y,
-          },
-          Type: "ERASE",
-        })
-    }
+    rs.Canvas.UpdateFromCanvasMessage(rm.Message)
   }
 }

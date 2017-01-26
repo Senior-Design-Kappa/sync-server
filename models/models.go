@@ -15,34 +15,10 @@ type VideoState struct {
   Muted bool `json:"muted"`
 }
 
-type CanvasState struct {
-}
-
-type LineSegment struct {
-  PrevX int `json:"prevX"`
-  PrevY int `json:"prevY"`
-  CurrX int `json:"currX"`
-  CurrY int `json:"currY"`
-}
-
-type ErasePoint struct {
-  X int `json:"x"`
-  Y int `json:"y"`
-}
-
 type Message struct {
 	MessageType string     `json:"messageType"`
 	Message     string     `json:"message"`
 	Hash        string     `json:"hash"`
 	Video       VideoState `json:"videoState"`
-
-  PrevX       int        `json:"prevX"`
-  PrevY       int        `json:"prevY"`
-  CurrX       int        `json:"currX"`
-  CurrY       int        `json:"currY"`
-
-  X           int        `json:"x"`
-  Y           int        `json:"y"`
-
-  Actions     []interface{} `json:"actions"`
+  Canvas      CanvasState `json:"canvasState"`
 }

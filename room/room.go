@@ -53,7 +53,7 @@ func (r *Room) handleMessage(inboundMessage InboundMessage) (err error) {
 		log.Printf("%+v", m)
 	case "INIT":
 		client := inboundMessage.Sender
-    videoTime := r.state.CurrentTime
+    videoTime := r.state.GetVideoTime()
     if r.state.Playing {
       videoTime += float32(time.Now().Sub(r.state.LastTime).Seconds())
     }
@@ -68,7 +68,7 @@ func (r *Room) handleMessage(inboundMessage InboundMessage) (err error) {
         Muted: r.state.Muted,
       },
 
-      Actions: r.state.Actions,
+      Canvas: r.state.Canvas,
 		})
 		client.send <- outbound
 	case "SYNC_VIDEO":
